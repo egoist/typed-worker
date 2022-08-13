@@ -1,6 +1,13 @@
-import { test, assert } from "vitest"
-import { foo } from "../src"
+import { expect, test } from "@playwright/test"
 
-test("simple", () => {
-  assert.equal(foo, "foo")
+test("worker", async ({ page }) => {
+  await page.goto("http://localhost:3001")
+  await Promise.all([
+    page.waitForSelector("#iframe-result"),
+    page.waitForSelector("#worker-result"),
+  ])
+  const workerResult = await page.$("#worker-result")
+  const iframeResult = await page.$("#iframe-result")
+  expect(await workerResult?.textContent()).toBe("3")
+  expect(await iframeResult?.textContent()).toBe("5")
 })

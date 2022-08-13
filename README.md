@@ -2,33 +2,68 @@
 
 ---
 
-# my-ts-lib
+# typed-worker
 
-[![npm version](https://badgen.net/npm/v/my-ts-lib)](https://npm.im/my-ts-lib) [![npm downloads](https://badgen.net/npm/dm/my-ts-lib)](https://npm.im/my-ts-lib)
-
-## Using this template
-
-- Search `my-ts-lib` and replace it with your custom package name.
-- Search `egoist` and replace it with your name.
-
-Features:
-
-- Package manager [pnpm](https://pnpm.js.org/), safe and fast
-- Release with [semantic-release](https://npm.im/semantic-release)
-- Bundle with [tsup](https://github.com/egoist/tsup)
-- Test with [vitest](https://vitest.dev)
-
-To skip CI (GitHub action), add `skip-ci` to commit message. To skip release, add `skip-release` to commit message.
+[![npm version](https://badgen.net/npm/v/typed-worker)](https://npm.im/typed-worker) [![npm downloads](https://badgen.net/npm/dm/typed-worker)](https://npm.im/typed-worker)
 
 ## Install
 
 ```bash
-npm i my-ts-lib
+npm i typed-worker
+```
+
+## Usage
+
+Create a `worker.ts`:
+
+```ts
+import { handleActions } from "typed-worker"
+
+export const actions = {
+  async sum(payload: { a: number; b: number }) {
+    await someHeavyOperation()
+    return payload.a + payload.b
+  },
+}
+
+export type Actions = typeof actions
+
+handleActions(actions)
+```
+
+In your `app.ts` where you want to use the worker:
+
+```ts
+import { createWorker } from "typed-worker"
+import { type Actions } from "./worker"
+
+const worker = createWorker<Actions>(
+  // Require a bundler like Vite, webpack etc
+  () =>
+    new Worker(new URL("./worker.ts"), import.meta.url, {
+      type: "module",
+    }),
+)
+
+const result = await worker.run("sum", { a: 1, b: 2 })
+
+expect(result).toBe(3)
+```
+
+To use the `worker.ts` in an iframe instead of a web worker, you only need to return the `iframe` element in `createWorker` instead:
+
+```ts
+const iframe = createWorker<Actions>(
+  // Require a bundler like Vite, webpack etc
+  () => document.querySelector<HTMLIframeElement>("#your-iframe-element")!,
+)
+
+const result = await iframe.run("sum", { a: 1, b: 2 })
 ```
 
 ## Sponsors
 
-[![sponsors](https://sponsors-images.egoist.sh/sponsors.svg)](https://github.com/sponsors/egoist)
+[![sponsors](https://sponsors-images.egoist.dev/sponsors.svg)](https://github.com/sponsors/egoist)
 
 ## License
 

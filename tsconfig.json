@@ -3,6 +3,7 @@
     "target": "es2020",
     "module": "esnext",
     "strict": true,
+    "lib": ["WebWorker", "ES2021", "DOM"],
     "esModuleInterop": true,
     "moduleResolution": "node",
     "skipLibCheck": true,
