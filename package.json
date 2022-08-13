@@ -20,7 +20,8 @@
     "build": "pnpm run build-fast --dts-resolve",
     "test": "playwright test",
     "prepublishOnly": "pnpm run build",
-    "example": "vite example --port 3001"
+    "example": "vite example --port 3001",
+    "playwright-install": "playwright install chromium --with-deps"
   },
   "license": "MIT",
   "devDependencies": {
