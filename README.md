@@ -54,7 +54,6 @@ To use the `worker.ts` in an iframe instead of a web worker, you only need to re
 
 ```ts
 const iframe = createWorker<Actions>(
-  // Require a bundler like Vite, webpack etc
   () => document.querySelector<HTMLIframeElement>("#your-iframe-element")!,
 )
 
