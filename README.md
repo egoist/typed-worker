@@ -40,7 +40,7 @@ import { type Actions } from "./worker"
 const worker = createWorker<Actions>(
   // Require a bundler like Vite, webpack etc
   () =>
-    new Worker(new URL("./worker.ts"), import.meta.url, {
+    new Worker(new URL("./worker.ts", import.meta.url), {
       type: "module",
     }),
 )
