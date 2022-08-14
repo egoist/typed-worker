@@ -2,7 +2,8 @@ import mitt from "mitt"
 
 const uuid = () => globalThis.crypto.randomUUID()
 
-const WORKER_READY_EVENT = "__READY__"
+const WORKER_READY_MESSAGE_ID = "typed-worker-ready"
+const IFRAME_ID_ATTR = "data-typed-worker"
 
 type ActionsType = Record<string, (payload: any) => any>
 
@@ -18,19 +19,29 @@ export const createWorker = <TActions extends ActionsType>(
   let worker: Worker | HTMLIFrameElement | undefined
   if (typeof document !== "undefined") {
     worker = create()
-    const target = worker instanceof Worker ? worker : window
-    target.addEventListener("message", (e) => {
+
+    const readyMessageId =
+      worker instanceof Worker ? WORKER_READY_MESSAGE_ID : uuid()
+
+    const handleMessage = (e: any) => {
       const data = (e as MessageEvent).data
 
       if (!data || typeof data !== "object") return
 
       const { id, result } = data
-      if (id === WORKER_READY_EVENT) {
+      if (id === readyMessageId) {
         resolveReady()
         return
       }
-      emitter.emit(`${id}:result`, result)
-    })
+      emitter.emit(id, result)
+    }
+
+    if (worker instanceof Worker) {
+      worker.addEventListener("message", handleMessage)
+    } else {
+      worker.setAttribute(IFRAME_ID_ATTR, readyMessageId)
+      window.addEventListener("message", handleMessage)
+    }
   }
 
   const run = async <
@@ -44,9 +55,8 @@ export const createWorker = <TActions extends ActionsType>(
     await ready
 
     const result = new Promise<ReturnType<TAction>>((resolve) => {
-      const eventName = `${id}:result`
-      emitter.on(eventName, (result: any) => {
-        emitter.off(eventName)
+      emitter.on(id, (result: any) => {
+        emitter.off(id)
         resolve(result)
       })
       const message = { id, type, payload }
@@ -85,7 +95,13 @@ export const handleActions = (actions: ActionsType) => {
     }
   }
 
-  postMessage({ id: WORKER_READY_EVENT })
+  // Notify the main thread that the worker is ready
+  const id = inWorker
+    ? WORKER_READY_MESSAGE_ID
+    : window.frameElement?.getAttribute(IFRAME_ID_ATTR)
+  if (id) {
+    postMessage({ id })
+  }
 
   onmessage = async (e: any) => {
     const { id, type, payload } = e.data
