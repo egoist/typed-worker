@@ -9,6 +9,7 @@ type ActionsType = Record<string, (payload: any) => any>
 
 export const createWorker = <TActions extends ActionsType>(
   create: () => Worker | HTMLIFrameElement,
+  options: { readyMessageId?: string } = {},
 ) => {
   const emitter = mitt()
 
@@ -21,7 +22,9 @@ export const createWorker = <TActions extends ActionsType>(
     worker = create()
 
     const readyMessageId =
-      worker instanceof Worker ? WORKER_READY_MESSAGE_ID : uuid()
+      worker instanceof Worker
+        ? WORKER_READY_MESSAGE_ID
+        : options.readyMessageId || uuid()
 
     const handleMessage = (e: any) => {
       const data = (e as MessageEvent).data
@@ -82,7 +85,10 @@ export const createWorker = <TActions extends ActionsType>(
 
 declare const WorkerGlobalScope: any
 
-export const handleActions = (actions: ActionsType) => {
+export const handleActions = (
+  actions: ActionsType,
+  options: { readyMessageId?: string } = {},
+) => {
   const inWorker =
     typeof WorkerGlobalScope !== "undefined" &&
     self instanceof WorkerGlobalScope
@@ -98,7 +104,8 @@ export const handleActions = (actions: ActionsType) => {
   // Notify the main thread that the worker is ready
   const id = inWorker
     ? WORKER_READY_MESSAGE_ID
-    : window.frameElement?.getAttribute(IFRAME_ID_ATTR)
+    : options.readyMessageId ||
+      window.frameElement?.getAttribute(IFRAME_ID_ATTR)
   if (id) {
     postMessage({ id })
   }
