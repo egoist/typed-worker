@@ -1,8 +1,8 @@
 import { handleActions } from "../src"
 
 export const actions = {
-  sum(payload: { a: number; b: number }) {
-    return payload.a + payload.b
+  sum(a: number, b: number) {
+    return a + b
   },
 }
 

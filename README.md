@@ -4,7 +4,7 @@
 
 # typed-worker
 
-[![npm version](https://badgen.net/npm/v/typed-worker)](https://npm.im/typed-worker) [![npm downloads](https://badgen.net/npm/dm/typed-worker)](https://npm.im/typed-worker)
+[![npm version](https://badgen.net/npm/v/typed-worker)](https://npm.im/typed-worker) [![npm downloads](https://badgen.net/npm/dm/typed-worker)](https://npm.im/typed-worker) [![paka type docs](https://badgen.net/badge/typedoc/typed-worker/pink)](https://paka.dev/npm/typed-worker)
 
 ## Install
 
@@ -20,9 +20,9 @@ Create a `worker.ts`:
 import { handleActions } from "typed-worker"
 
 export const actions = {
-  async sum(payload: { a: number; b: number }) {
+  async sum(a: number, b: number) {
     await someHeavyOperation()
-    return payload.a + payload.b
+    return a + b
   },
 }
 
@@ -45,7 +45,7 @@ const worker = createWorker<Actions>(
     }),
 )
 
-const result = await worker.run("sum", { a: 1, b: 2 })
+const result = await worker.run("sum", 1, 2)
 
 expect(result).toBe(3)
 ```
@@ -57,7 +57,7 @@ const iframe = createWorker<Actions>(
   () => document.querySelector<HTMLIframeElement>("#your-iframe-element")!,
 )
 
-const result = await iframe.run("sum", { a: 1, b: 2 })
+const result = await iframe.run("sum", 1, 2)
 ```
 
 ## Sponsors

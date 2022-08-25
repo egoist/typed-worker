@@ -5,11 +5,17 @@ const uuid = () => globalThis.crypto.randomUUID()
 const WORKER_READY_MESSAGE_ID = "typed-worker-ready"
 const IFRAME_ID_ATTR = "data-typed-worker"
 
-type ActionsType = Record<string, (payload: any) => any>
+type ActionsType = Record<string, (...args: any[]) => any>
 
 export const createWorker = <TActions extends ActionsType>(
   create: () => Worker | HTMLIFrameElement,
-  options: { readyMessageId?: string } = {},
+  options: {
+    /**
+     * For cross origin iframes, you need to pass a `readyMessageId` manually
+     * so we can tell when it's ready, this needs to a unique id
+     */
+    readyMessageId?: string
+  } = {},
 ) => {
   const emitter = mitt()
 
@@ -52,7 +58,7 @@ export const createWorker = <TActions extends ActionsType>(
     TAction extends TActions[TType],
   >(
     type: TType,
-    payload: Parameters<TAction>[0],
+    ...args: Parameters<TAction>
   ): Promise<ReturnType<TAction>> => {
     const id = uuid()
     await ready
@@ -62,7 +68,7 @@ export const createWorker = <TActions extends ActionsType>(
         emitter.off(id)
         resolve(result)
       })
-      const message = { id, type, payload }
+      const message = { id, type, args }
       if (worker instanceof Worker) {
         worker?.postMessage(message)
       } else if (worker) {
@@ -111,11 +117,11 @@ export const handleActions = (
   }
 
   onmessage = async (e: any) => {
-    const { id, type, payload } = e.data
+    const { id, type, args } = e.data
 
     const action = actions[type]
     if (action) {
-      const result = await action(payload)
+      const result = await action(...args)
       postMessage({ id, result })
     }
   }
