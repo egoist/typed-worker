@@ -60,6 +60,16 @@ const iframe = createWorker<Actions>(
 const result = await iframe.run("sum", 1, 2)
 ```
 
+### Error handling
+
+Errors thrown in the worker will be re-thrown when you call the `.run` method:
+
+```ts
+worker.run("some-problematic-action").catch((err) => {
+  // err is the error thrown in the worker
+})
+```
+
 ## Sponsors
 
 [![sponsors](https://sponsors-images.egoist.dev/sponsors.svg)](https://github.com/sponsors/egoist)

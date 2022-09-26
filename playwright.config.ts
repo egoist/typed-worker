@@ -8,6 +8,7 @@ const config: PlaywrightTestConfig = {
   },
   use: {
     baseURL: "http://localhost:3001/",
+    headless: false,
   },
 }
 export default config

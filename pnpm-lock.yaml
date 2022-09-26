@@ -3,6 +3,7 @@ lockfileVersion: 5.4
 specifiers:
   '@egoist/prettier-config': 1.0.0
   '@playwright/test': ^1.25.0
+  '@types/node': ^18.7.21
   mitt: ^3.0.0
   prettier: 2.5.1
   tsup: 6.2.2
@@ -15,6 +16,7 @@ dependencies:
 devDependencies:
   '@egoist/prettier-config': 1.0.0
   '@playwright/test': 1.25.0
+  '@types/node': 18.7.21
   prettier: 2.5.1
   tsup: 6.2.2_typescript@4.7.4
   typescript: 4.7.4
@@ -88,12 +90,12 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
     dependencies:
-      '@types/node': 10.17.60
+      '@types/node': 18.7.21
       playwright-core: 1.25.0
     dev: true
 
-  /@types/node/10.17.60:
-    resolution: {integrity: sha512-F0KIgDJfy2nA3zMLmWGKxcH2ZVEtCZXHHdOQs2gSaQ27+lNeEfGxzkIw90aXswATX7AZ33tahPbzy6KAfUreVw==}
+  /@types/node/18.7.21:
+    resolution: {integrity: sha512-rLFzK5bhM0YPyCoTC8bolBjMk7bwnZ8qeZUBslBfjZQou2ssJdWslx9CZ8DGM+Dx7QXQiiTVZ/6QO6kwtHkZCA==}
     dev: true
 
   /@types/parse-json/4.0.0:

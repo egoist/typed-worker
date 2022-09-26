@@ -25,3 +25,11 @@ iframe.run("sum", 2, 3).then((result) => {
   div.textContent = `${result}`
   document.body.append(div)
 })
+
+worker.run("errorFunction").catch((error) => {
+  console.error(error)
+  const div = document.createElement("div")
+  div.id = "error-result"
+  div.textContent = `${error.message}`
+  document.body.append(div)
+})

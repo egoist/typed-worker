@@ -17,7 +17,7 @@ export const createWorker = <TActions extends ActionsType>(
     readyMessageId?: string
   } = {},
 ) => {
-  const emitter = mitt()
+  const emitter = mitt<Record<string, { error?: any; result?: any }>>()
 
   let resolveReady: () => void
 
@@ -37,12 +37,16 @@ export const createWorker = <TActions extends ActionsType>(
 
       if (!data || typeof data !== "object") return
 
-      const { id, result } = data
+      const { id, result, error } = data
       if (id === readyMessageId) {
         resolveReady()
         return
       }
-      emitter.emit(id, result)
+      if (error) {
+        emitter.emit(id, { error })
+      } else {
+        emitter.emit(id, { result })
+      }
     }
 
     if (worker instanceof Worker) {
@@ -63,10 +67,14 @@ export const createWorker = <TActions extends ActionsType>(
     const id = uuid()
     await ready
 
-    const result = new Promise<ReturnType<TAction>>((resolve) => {
-      emitter.on(id, (result: any) => {
+    const result = new Promise<ReturnType<TAction>>((resolve, reject) => {
+      emitter.on(id, ({ error, result }) => {
         emitter.off(id)
-        resolve(result)
+        if (result) {
+          resolve(result)
+        } else if (error) {
+          reject(error)
+        }
       })
       const message = { id, type, args }
       if (worker instanceof Worker) {
@@ -121,8 +129,12 @@ export const handleActions = (
 
     const action = actions[type]
     if (action) {
-      const result = await action(...args)
-      postMessage({ id, result })
+      try {
+        const result = await action(...args)
+        postMessage({ id, result })
+      } catch (error) {
+        postMessage({ id, error })
+      }
     }
   }
 }
