@@ -124,7 +124,7 @@ export const handleActions = (
     postMessage({ id })
   }
 
-  onmessage = async (e: any) => {
+  globalThis.addEventListener("message", async (e) => {
     const { id, type, args } = e.data
 
     const action = actions[type]
@@ -136,5 +136,5 @@ export const handleActions = (
         postMessage({ id, error })
       }
     }
-  }
+  })
 }
