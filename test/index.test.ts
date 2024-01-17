@@ -7,9 +7,11 @@ test("worker", async ({ page }) => {
     page.waitForSelector("#worker-result"),
   ])
   const workerResult = await page.$("#worker-result")
+  const falsyResult = await page.$("#falsy-result")
   const iframeResult = await page.$("#iframe-result")
   const errorResult = await page.$("#error-result")
   expect(await workerResult?.textContent()).toBe("3")
+  expect(await falsyResult?.textContent()).toBe("false")
   expect(await iframeResult?.textContent()).toBe("5")
   expect(await errorResult?.textContent()).toBe("something is wrong")
 })

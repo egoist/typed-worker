@@ -70,11 +70,8 @@ export const createWorker = <TActions extends ActionsType>(
     const result = new Promise<ReturnType<TAction>>((resolve, reject) => {
       emitter.on(id, ({ error, result }) => {
         emitter.off(id)
-        if (result) {
-          resolve(result)
-        } else if (error) {
-          reject(error)
-        }
+        if (error) reject(error)
+        else resolve(result)
       })
       const message = { id, type, args }
       if (worker instanceof Worker) {

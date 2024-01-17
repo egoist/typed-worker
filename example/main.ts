@@ -8,11 +8,19 @@ const worker = createWorker<Actions>(
     }),
 )
 
-worker.run("sum", 1, 2).then((result) => {
+const createResult = (id: string, result: any) => {
   const div = document.createElement("div")
-  div.id = "worker-result"
+  div.id = id
   div.textContent = `${result}`
   document.body.append(div)
+}
+
+worker.run("sum", 1, 2).then((result) => {
+  createResult("worker-result", result)
+})
+
+worker.run("isTransparent", []).then((result) => {
+  createResult("falsy-result", result)
 })
 
 const iframe = createWorker<Actions>(() => {
@@ -20,16 +28,10 @@ const iframe = createWorker<Actions>(() => {
 })
 
 iframe.run("sum", 2, 3).then((result) => {
-  const div = document.createElement("div")
-  div.id = "iframe-result"
-  div.textContent = `${result}`
-  document.body.append(div)
+  createResult("iframe-result", result)
 })
 
 worker.run("errorFunction").catch((error) => {
   console.error(error)
-  const div = document.createElement("div")
-  div.id = "error-result"
-  div.textContent = `${error.message}`
-  document.body.append(div)
+  createResult("error-result", error.message)
 })
