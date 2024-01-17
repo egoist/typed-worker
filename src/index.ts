@@ -7,6 +7,10 @@ const IFRAME_ID_ATTR = "data-typed-worker"
 
 type ActionsType = Record<string, (...args: any[]) => any>
 
+type MessageData = { id: string; type: string; args: any[] }
+
+type MessageDataResult = { id: string; result?: any; error?: any }
+
 export const createWorker = <TActions extends ActionsType>(
   create: () => Worker | HTMLIFrameElement,
   options: {
@@ -32,8 +36,8 @@ export const createWorker = <TActions extends ActionsType>(
         ? WORKER_READY_MESSAGE_ID
         : options.readyMessageId || uuid()
 
-    const handleMessage = (e: any) => {
-      const data = (e as MessageEvent).data
+    const handleMessage = (e: MessageEvent<MessageDataResult>) => {
+      const { data } = e
 
       if (!data || typeof data !== "object") return
 
@@ -70,10 +74,10 @@ export const createWorker = <TActions extends ActionsType>(
     const result = new Promise<ReturnType<TAction>>((resolve, reject) => {
       emitter.on(id, ({ error, result }) => {
         emitter.off(id)
-        if (result) {
-          resolve(result)
-        } else if (error) {
+        if (error) {
           reject(error)
+        } else {
+          resolve(result)
         }
       })
       const message = { id, type, args }
@@ -107,7 +111,7 @@ export const handleActions = (
     typeof WorkerGlobalScope !== "undefined" &&
     self instanceof WorkerGlobalScope
 
-  const postMessage = (message: any) => {
+  const postMessage = (message: MessageDataResult) => {
     if (inWorker) {
       globalThis.postMessage(message)
     } else {
@@ -124,17 +128,20 @@ export const handleActions = (
     postMessage({ id })
   }
 
-  onmessage = async (e: any) => {
-    const { id, type, args } = e.data
+  globalThis.addEventListener(
+    "message",
+    async (e: MessageEvent<MessageData>) => {
+      const { id, type, args } = e.data
 
-    const action = actions[type]
-    if (action) {
-      try {
-        const result = await action(...args)
-        postMessage({ id, result })
-      } catch (error) {
-        postMessage({ id, error })
+      const action = actions[type]
+      if (action) {
+        try {
+          const result = await action(...args)
+          postMessage({ id, result })
+        } catch (error) {
+          postMessage({ id, error })
+        }
       }
-    }
-  }
+    },
+  )
 }
